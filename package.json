@@ -33,6 +33,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@prisma/client": "5.9.1",
     "@types/node": "^20.11.17",
     "clsx": "^2.1.0",
     "prisma": "^5.9.1",

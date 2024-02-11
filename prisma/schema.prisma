@@ -9,3 +9,50 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Tally {
+  id       Int       @id @default(autoincrement())
+  name     String
+  users    User[]
+  currency String
+  Expense  Expense[]
+
+  @@index([id], name: "groupId_index")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  name         String
+  tallyId      Int
+  tally        Tally          @relation(fields: [tallyId], references: [id])
+  Expense      Expense[]
+  ExpenseUsers ExpenseUsers[]
+
+  @@index([tallyId], name: "tallyId_index")
+}
+
+model ExpenseUsers {
+  id        Int     @id @default(autoincrement())
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+  expenseId Int
+  userId    Int
+
+  @@index([expenseId], name: "expenseId_index")
+}
+
+model Expense {
+  id             Int            @id @default(autoincrement())
+  tallyId        Int
+  tally          Tally          @relation(fields: [tallyId], references: [id])
+  title          String
+  amount         Float
+  type           String
+  primaryUserId  Int
+  primaryUser    User           @relation(fields: [primaryUserId], references: [id])
+  secondaryUsers ExpenseUsers[]
+  currency       String
+  conversionRate Float
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
