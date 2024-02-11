@@ -15,7 +15,7 @@ model Tally {
   name     String
   users    User[]
   currency String
-  Expense  Expense[]
+  expenses Expense[]
 
   @@index([id], name: "groupId_index")
 }
@@ -25,8 +25,8 @@ model User {
   name         String
   tallyId      Int
   tally        Tally          @relation(fields: [tallyId], references: [id])
-  Expense      Expense[]
-  ExpenseUsers ExpenseUsers[]
+  expenses      Expense[]
+  expenseUsers ExpenseUsers[]
 
   @@index([tallyId], name: "tallyId_index")
 }
