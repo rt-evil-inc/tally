@@ -21,4 +21,7 @@
 	"[svelte]": {
 		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
 	},
+	"[prisma]": {
+		"editor.defaultFormatter": "Prisma.prisma"
+	},
 }
