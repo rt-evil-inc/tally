@@ -4,8 +4,9 @@
 	import { currencies, formSchema } from './schema';
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
+
 	export let data: PageData;
-	let participants = [Math.random()];
+	let participants = [''];
 </script>
 
 <Card.Root class="w-[400px]">
@@ -26,7 +27,7 @@
 			<Form.Field {config} name="description">
 				<Form.Item>
 					<Form.Label>Description</Form.Label>
-					<Form.Input />
+					<Form.Textarea />
 					<Form.Description>The description of your Tally.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
@@ -36,7 +37,7 @@
 				<Form.Item>
 					<Form.Label>Currency</Form.Label>
 					<Form.Select>
-						<Form.SelectTrigger class="w-[180px] {!value && 'text-muted-foreground'}" placeholder="Select a currency" />
+						<Form.SelectTrigger class="{value ? '' : 'text-muted-foreground'}" placeholder="Select a currency" />
 						<Form.SelectContent>
 							{#each currencies as currency}
 								<Form.SelectItem value={currency}>{currency}</Form.SelectItem>
@@ -47,17 +48,24 @@
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
-			<div class="mb-5">
-				{#each participants as rnd, i (rnd)}
+			<div class="mb-5 flex flex-col gap-1">
+				{#each participants as p, i}
 					<Form.Field {config} name={`participants[${i}]`}>
-						<Form.Item class="flex items-center gap-1 mt-2">
-							<Form.Input />
-							<Form.Validation />
-							<Button class="!mt-0 font-[\'Segoe_UI_Symbol\']" variant="outline" on:click={() => { participants = participants.filter((partNum, _) => partNum !== rnd); }}>✖&#xFE0E;</Button>
+						<Form.Item>
+							{#if i === 0}
+								<Form.Label>Participants</Form.Label>
+							{/if}
+							<div class="grow relative">
+								<Form.Input />
+								<Form.Validation />
+								{#if i > 0}
+									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => { participants = participants.filter((_, index) => index !== i); }}>✖</Button>
+								{/if}
+							</div>
 						</Form.Item>
 					</Form.Field>
 				{/each}
-				<Button class="mt-2" variant="outline" on:click={() => { participants = [...participants, Math.random()]; }}>Add</Button>
+				<Button class="mr-auto" variant="outline" on:click={() => { participants = [...participants, '']; }}>Add</Button>
 			</div>
 			<Form.Button>Create</Form.Button>
 		</Form.Root>
