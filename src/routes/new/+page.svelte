@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
-	import { currencies, formSchema } from './schema';
+	import { currencies } from '$lib/currencies';
+	import { formSchema } from './schema';
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
 
 	export let data: PageData;
-	let participants = [''];
 </script>
 
 <Card.Root class="w-[400px]">
@@ -15,7 +15,7 @@
 		<Card.Description>Create a new Tally</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<Form.Root method="POST" form={data.form} schema={formSchema} let:config>
+		<Form.Root method="POST" form={data.form} schema={formSchema} let:config let:formStore let:formValues let:errors>
 			<Form.Field {config} name="name">
 				<Form.Item>
 					<Form.Label>Name</Form.Label>
@@ -49,23 +49,26 @@
 				</Form.Item>
 			</Form.Field>
 			<div class="mb-5 flex flex-col gap-1">
-				{#each participants as p, i}
+				{#each formValues.participants.length > 0 ? formValues.participants : ['', ''] as _, i}
 					<Form.Field {config} name={`participants[${i}]`}>
 						<Form.Item>
 							{#if i === 0}
-								<Form.Label>Participants</Form.Label>
+								<Form.Label>Participants ({formValues.participants.length})</Form.Label>
 							{/if}
 							<div class="grow relative">
-								<Form.Input />
+								<Form.Input placeholder="{i === 0 ? 'Your name' : 'Other participant name'}" />
 								<Form.Validation />
 								{#if i > 0}
-									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => { participants = participants.filter((_, index) => index !== i); }}>✖</Button>
+									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => formStore.update(form => ({ ...form, 'participants': form.participants.filter((_, index) => index !== i) }))}>✖</Button>
 								{/if}
 							</div>
 						</Form.Item>
 					</Form.Field>
 				{/each}
-				<Button class="mr-auto" variant="outline" on:click={() => { participants = [...participants, '']; }}>Add</Button>
+				{#if errors?.participants?._errors?.[0]}
+					<span class="text-[0.8rem] font-medium text-destructive">{errors.participants._errors[0]}</span>
+				{/if}
+				<Button class="mr-auto" variant="outline" on:click={() => formStore.update(form => ({ ...form, 'participants': [...form.participants, ''] }))}>Add</Button>
 			</div>
 			<Form.Button>Create</Form.Button>
 		</Form.Root>
