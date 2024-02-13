@@ -1,20 +1,26 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
+	import * as Table from '$lib/components/ui/table';
+	import * as Popover from '$lib/components/ui/popover';
 	import { formSchema } from './schema';
 	import type { PageData } from './$types';
 	import { currencies, types, categories } from '$lib/enums';
-	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import { CalendarIcon } from 'lucide-svelte';
 	import { Calendar } from '$lib/components/ui/calendar';
 	import { DateFormatter, getLocalTimeZone, parseDateTime, today } from '@internationalized/date';
 	import { superForm } from 'sveltekit-superforms/client';
+	import Input from '$lib/components/ui/input/input.svelte';
+	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
+	import Label from '$lib/components/ui/label/label.svelte';
 
 	export let data: PageData;
-	const form = superForm(data.form, { validators: formSchema, taintedMessage: null });
+	const form = superForm(data.form, { validators: formSchema, taintedMessage: null, dataType: 'json' });
 	const { form: formStore, errors } = form;
+	$formStore.date = new Date;
+	$formStore.amount = '0.00';
 	const df = new DateFormatter('en-US', { dateStyle: 'long' });
 
 	const participants = {
@@ -25,7 +31,7 @@
 		4: 'Person 5',
 	};
 
-	$: console.log($errors);
+	$: console.log({ values: $formStore, errors: $errors });
 
 	$: if ($formStore.type === 'transfer' && !$formStore.title) {
 		$formStore.title = 'Transfer';
@@ -92,7 +98,7 @@
 				<Form.Item>
 					<Form.Label>Amount</Form.Label>
 					<div class="flex gap-1">
-						<Form.Input type="number" step="any" min={0} />
+						<Form.Input type="number" step="any" min={0} on:blur={() => $formStore.amount = parseFloat($formStore.amount).toFixed(2)} />
 						<!-- Currency -->
 						<Form.Field {config} name="currency">
 							<Form.Item>
@@ -116,12 +122,17 @@
 				<Form.Item class="flex flex-col">
 					<Form.Label for="date">Date</Form.Label>
 					<Popover.Root>
-						<Form.Control id="date" let:attrs>
-							<Popover.Trigger id="date" {...attrs} class={cn(buttonVariants({ variant: 'outline' }), 'justify-start text-left font-normal', !$formStore.date && 'text-muted-foreground')} >
-								{df.format($formStore.date)}
-								<CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
-							</Popover.Trigger>
-						</Form.Control>
+						<div class="flex gap-2">
+							<Form.Control id="date" let:attrs>
+								<Popover.Trigger id="date" {...attrs} class={cn(buttonVariants({ variant: 'outline' }), 'grow justify-start text-left font-normal', !$formStore.date && 'text-muted-foreground')} >
+									{df.format($formStore.date)}
+									<CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
+								</Popover.Trigger>
+							</Form.Control>
+							<div class="grow">
+								<Input type="time" on:input={e => $formStore.date = new Date(`${$formStore.date.toISOString().slice(0, 11)}${e.target.value}`)} value={$formStore.date.toISOString().slice(11, 16)} />
+							</div>
+						</div>
 						<Popover.Content class="w-auto p-0" side="top">
 							<Calendar maxValue={today(getLocalTimeZone())} value={parseDateTime($formStore.date.toISOString().slice(0, -1))}
 								onValueChange={v => { if (v) $formStore.date = v.toDate(getLocalTimeZone()); }}
@@ -147,6 +158,59 @@
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
+			<!-- Distribution -->
+			<Label>{$formStore.type === 'transfer' ? 'To' : 'For'}</Label>
+			<Table.Root>
+				<Table.Header>
+					<Table.Row>
+						<Table.Head class="w-8">
+							{@const checked = Object.keys(participants).filter(id => $formStore.distribution[id]?.parts || $formStore.distribution[id]?.amount)}
+							<Checkbox
+								checked="{checked.length === Object.keys(participants).length ? true : checked.length === 0 ? false : 'indeterminate'}"
+								on:click={() => {
+									if (checked.length === Object.keys(participants).length) {
+										$formStore.distribution = {};
+									} else {
+										Object.keys(participants).forEach(id => { if (!$formStore.distribution[id]?.amount) $formStore.distribution[id] = { parts: 1 }; });
+									}
+								}}
+							/></Table.Head>
+						<Table.Head>Participant</Table.Head>
+						<Table.Head class="w-20 text-right">Parts</Table.Head>
+						<Table.Head class="w-24 text-right">Amount</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body class="w-full">
+					{#each Object.entries(participants) as [id, participant]}
+						{@const entry = $formStore.distribution[id]}
+						<Table.Row>
+							<Table.Cell>
+								<Checkbox
+									checked={entry?.parts || entry?.amount}
+									on:click={() => {
+										if (entry) {
+											delete $formStore.distribution[id];
+											$formStore.distribution = $formStore.distribution;
+										} else {
+											$formStore.distribution[id] = { parts: 1 };
+										}
+									}}
+								/>
+							</Table.Cell>
+							<Table.Cell class="{entry ? '' : 'text-muted-foreground'}">{participant}</Table.Cell>
+							<Table.Cell><Input class="{entry?.parts ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
+								value={entry?.parts ? entry?.parts : entry?.amount ? '' : 0}
+								on:input={e => $formStore.distribution[id] = { parts: e.target.value } }
+							/></Table.Cell>
+							<Table.Cell><Input class="{entry?.amount ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
+								value={entry?.amount ? entry?.amount : '0.00'}
+								on:input={e => $formStore.distribution[id] = { amount: e.target.value } }
+								on:blur={() => $formStore.distribution[id] = { amount: parseFloat($formStore.distribution[id].amount).toFixed(2) }}
+							/></Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
 			<Form.Button class="mt-5">Add</Form.Button>
 		</Form.Root>
 	</Card.Content>
