@@ -200,19 +200,28 @@
 							<Table.Cell class="{entry ? '' : 'text-muted-foreground'}">{participant}</Table.Cell>
 							<Table.Cell><Input class="{entry?.parts ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
 								value={entry?.parts ? entry?.parts : entry?.amount ? '' : 0}
-								on:input={e => $formStore.distribution[id] = { parts: e.target.value } }
+								on:input={e => {
+									$formStore.distribution[id] = { parts: e.target.value };
+									if (e.target.value == 0) delete $formStore.distribution[id];
+								} }
 							/></Table.Cell>
-							{@const totalParts = Math.max(1, Object.values($formStore.distribution).map(d => d.parts ? Number(d.parts) : 0).reduce((a, b) => a + b, 0))}
-							{@const totalAmount = Object.values($formStore.distribution).map(d => d.amount ? parseFloat(d.amount) : 0).reduce((a, b) => a + b, 0)}
-							<Table.Cell><Input class="{entry?.amount ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
-								value={entry?.amount ? entry?.amount : (($formStore.amount - totalAmount) * (entry?.parts ? entry?.parts : 0) / totalParts).toFixed(2)}
-								on:input={e => $formStore.distribution[id] = { amount: e.target.value } }
-								on:blur={() => $formStore.distribution[id] = { amount: parseFloat($formStore.distribution[id].amount).toFixed(2) }}
+							{@const sumParts = Math.max(1, Object.values($formStore.distribution).map(d => d.parts ? Number(d.parts) : 0).reduce((a, b) => a + b, 0))}
+							{@const sumAmount = Object.values($formStore.distribution).map(d => parseFloat(d.amount ?? 0)).reduce((a, b) => a + b, 0)}
+							<Table.Cell><Input class="{entry?.amount ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0} max={$formStore.amount - (sumAmount - (entry?.amount ? entry?.amount : 0))}
+								value={entry?.amount ? entry?.amount : (($formStore.amount - sumAmount) * (entry?.parts ? entry?.parts : 0) / sumParts).toFixed(2)}
+								on:input={e => {
+									$formStore.distribution[id] = { amount: e.target.value };
+									if (e.target.value == 0) delete $formStore.distribution[id];
+								}}
+								on:blur={() => { if ($formStore.distribution[id]?.amount) $formStore.distribution[id] = { amount: parseFloat(entry?.amount).toFixed(2) }; }}
 							/></Table.Cell>
 						</Table.Row>
 					{/each}
 				</Table.Body>
 			</Table.Root>
+			{#if $errors?._errors?.[0]}
+				<span class="text-[0.8rem] font-medium text-destructive">{$errors._errors[0]}</span><br>
+			{/if}
 			<Form.Button class="mt-5">Add</Form.Button>
 		</Form.Root>
 	</Card.Content>
