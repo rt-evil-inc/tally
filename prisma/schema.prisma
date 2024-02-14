@@ -21,12 +21,13 @@ model Tally {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  name         String
-  tallyId      Int
-  tally        Tally          @relation(fields: [tallyId], references: [id])
-  expenses      Expense[]
-  expenseUsers ExpenseUsers[]
+  id              Int            @id @default(autoincrement())
+  name            String
+  tallyId         Int
+  tally           Tally          @relation(fields: [tallyId], references: [id])
+  primaryExpenses Expense[]      @relation("PrimaryUserRelation")
+  addedExpenses   Expense[]      @relation("AddedByRelation")
+  expenses        ExpenseUsers[]
 
   @@index([tallyId], name: "tallyId_index")
 }
@@ -49,10 +50,12 @@ model Expense {
   amount         Float
   type           String
   primaryUserId  Int
-  primaryUser    User           @relation(fields: [primaryUserId], references: [id])
+  primaryUser    User           @relation("PrimaryUserRelation", fields: [primaryUserId], references: [id])
   secondaryUsers ExpenseUsers[]
   currency       String
   conversionRate Float
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  addedBy        User           @relation("AddedByRelation", fields: [addedById], references: [id])
+  addedById      Int
 }
