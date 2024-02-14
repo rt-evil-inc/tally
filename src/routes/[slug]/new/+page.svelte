@@ -186,7 +186,7 @@
 						<Table.Row>
 							<Table.Cell>
 								<Checkbox
-									checked={entry?.parts || entry?.amount}
+									checked={!!entry}
 									on:click={() => {
 										if (entry) {
 											delete $formStore.distribution[id];
@@ -202,8 +202,10 @@
 								value={entry?.parts ? entry?.parts : entry?.amount ? '' : 0}
 								on:input={e => $formStore.distribution[id] = { parts: e.target.value } }
 							/></Table.Cell>
+							{@const totalParts = Math.max(1, Object.values($formStore.distribution).map(d => d.parts ? Number(d.parts) : 0).reduce((a, b) => a + b, 0))}
+							{@const totalAmount = Object.values($formStore.distribution).map(d => d.amount ? parseFloat(d.amount) : 0).reduce((a, b) => a + b, 0)}
 							<Table.Cell><Input class="{entry?.amount ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
-								value={entry?.amount ? entry?.amount : '0.00'}
+								value={entry?.amount ? entry?.amount : (($formStore.amount - totalAmount) * (entry?.parts ? entry?.parts : 0) / totalParts).toFixed(2)}
 								on:input={e => $formStore.distribution[id] = { amount: e.target.value } }
 								on:blur={() => $formStore.distribution[id] = { amount: parseFloat($formStore.distribution[id].amount).toFixed(2) }}
 							/></Table.Cell>
