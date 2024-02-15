@@ -108,6 +108,22 @@
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
+			<!-- Conversion rate -->
+			{#if $formStore.currency !== data?.form?.data?.currency}
+				<Form.Field {config} name="conversionRate">
+					<Form.Item>
+						<div class="flex gap-8">
+							<span class="whitespace-nowrap text-sm text-muted-foreground">= {($formStore.amount * $formStore.conversionRate).toFixed(2)} {data?.form?.data?.currency}</span>
+							<div class="flex items-center gap-1">
+								<span class="whitespace-nowrap">1 {$formStore.currency} =</span>
+								<Form.Input type="number" step="any" min={0} placeholder="1.00" />
+								{data?.form?.data?.currency}
+							</div>
+						</div>
+						<Form.Validation />
+					</Form.Item>
+				</Form.Field>
+			{/if}
 			<!-- Date -->
 			<Form.Field {config} name="date">
 				<Form.Item>
