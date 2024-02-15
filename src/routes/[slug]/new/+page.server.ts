@@ -29,6 +29,11 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
+		const tally = await prisma.tally.findUnique({ where: { id: event.params.slug } });
+		if (!tally) {
+			return fail(404, { form, message: 'Tally not found' });
+		}
+
 		const savedForm = await prisma.expense.create({
 			data: {
 				tally: { connect: { id: event.params.slug } },
@@ -36,7 +41,7 @@ export const actions: Actions = {
 				type: form.data.type,
 				amount: form.data.amount,
 				currency: form.data.currency,
-				conversionRate: form.data.conversionRate,
+				conversionRate: tally.currency === form.data.currency ? 1 : form.data.conversionRate,
 				createdAt: form.data.date,
 				updatedAt: form.data.date,
 				category: form.data.category,
