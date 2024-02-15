@@ -9,7 +9,9 @@ export const formSchema = z.object({
 	amount: z.coerce.number().positive(),
 	currency: z.enum(currencies),
 	conversionRate: z.coerce.number().positive().default(1),
-	date: z.date(),
+	date: z.date().refine(d => d <= new Date, {
+		message: 'Date cannot be in the future',
+	}),
 	category: z.enum(categories).nullable(),
 	primaryParticipant: participant,
 	distribution: z.record(participant, z.object({
