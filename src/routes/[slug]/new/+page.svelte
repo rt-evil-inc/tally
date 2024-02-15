@@ -79,7 +79,7 @@
 			</div>
 			<!-- Title -->
 			<Form.Field {config} name="title">
-				<Form.Item>
+				<Form.Item class="mt-2">
 					<Form.Label>Title</Form.Label>
 					<Form.Input />
 					<Form.Validation />
@@ -87,7 +87,7 @@
 			</Form.Field>
 			<!-- Amount -->
 			<Form.Field {config} name="amount">
-				<Form.Item>
+				<Form.Item class="mt-4">
 					<Form.Label>Amount</Form.Label>
 					<div class="flex gap-1">
 						<Form.Input type="number" step="any" min={0} on:blur={() => $formStore.amount = parseFloat($formStore.amount).toFixed(2)} />
@@ -114,7 +114,7 @@
 					<Form.Item>
 						<div class="flex gap-8">
 							<span class="whitespace-nowrap text-sm text-muted-foreground">= {($formStore.amount * $formStore.conversionRate).toFixed(2)} {data?.form?.data?.currency}</span>
-							<div class="flex items-center gap-1">
+							<div class="flex items-center gap-1 text-sm">
 								<span class="whitespace-nowrap">1 {$formStore.currency} =</span>
 								<Form.Input type="number" step="any" min={0} placeholder="1.00" />
 								{data?.form?.data?.currency}
@@ -126,7 +126,7 @@
 			{/if}
 			<!-- Date -->
 			<Form.Field {config} name="date">
-				<Form.Item>
+				<Form.Item class="mt-4">
 					<Form.Label for="date">Date</Form.Label>
 					<Popover.Root>
 						<div class="flex gap-2">
@@ -151,7 +151,7 @@
 			</Form.Field>
 			<!-- Primary participant -->
 			<Form.Field {config} name="primaryParticipant">
-				<Form.Item>
+				<Form.Item class="mt-4">
 					<Form.Label>{$formStore.type === 'expense' ? 'Paid by' : $formStore.type === 'income' ? 'Received by' : 'From'}</Form.Label>
 					<Form.Select>
 						<Form.SelectTrigger placeholder="Select a participant" class="{$formStore.primaryParticipant ? '' : 'text-muted-foreground'}" />
@@ -165,7 +165,9 @@
 				</Form.Item>
 			</Form.Field>
 			<!-- Distribution -->
-			<Label>{$formStore.type === 'transfer' ? 'To' : 'For'}</Label>
+			<div class="mt-4">
+				<Label>{$formStore.type === 'transfer' ? 'To' : 'For'}</Label>
+			</div>
 			<Table.Root>
 				<Table.Header>
 					<Table.Row>

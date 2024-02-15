@@ -29,7 +29,7 @@
 				</Form.Item>
 			</Form.Field>
 			<Form.Field {config} name="description">
-				<Form.Item>
+				<Form.Item class="mt-4">
 					<Form.Label>Description</Form.Label>
 					<Form.Textarea />
 					<Form.Description>The description of your Tally.</Form.Description>
@@ -38,7 +38,7 @@
 			</Form.Field>
 			<Form.Field {config} name="currency" let:attrs>
 				{@const { value } = attrs.input}
-				<Form.Item>
+				<Form.Item class="mt-4">
 					<Form.Label>Currency</Form.Label>
 					<Form.Select>
 						<Form.SelectTrigger class="{value ? '' : 'text-muted-foreground'}" placeholder="Select a currency" />
@@ -52,7 +52,7 @@
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
-			<div class="flex flex-col gap-1">
+			<div class="flex flex-col gap-1 mt-4">
 				{#each $formStore.participants.length > 0 ? $formStore.participants : ['', ''] as _, i}
 					<Form.Field {config} name={`participants[${i}]`}>
 						<Form.Item>
