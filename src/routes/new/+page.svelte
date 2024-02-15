@@ -6,9 +6,24 @@
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
-	const form = superForm(data.form, { validators: formSchema, taintedMessage: null, dataType: 'json' });
+	const form = superForm(data.form, {
+		validators: formSchema,
+		taintedMessage: null,
+		dataType: 'json',
+		onUpdated: ({ form }) => {
+			if (form.valid) {
+				toast.success('Tally created successfully');
+				goto(`/`);
+			}
+		},
+		onError: ({ result }) => {
+			toast.error(result.error.message);
+		},
+	});
 	const { form: formStore, errors } = form;
 	$: console.log({ values: $formStore, errors: $errors });
 </script>

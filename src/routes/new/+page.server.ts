@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { PageServerLoad, Actions } from './$types';
-import { fail } from '@sveltejs/kit';
+import { fail, error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { formSchema } from './schema';
 
@@ -21,7 +21,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const savedForm = await prisma.tally.create({
+		await prisma.tally.create({
 			data: {
 				name: form.data.name,
 				description: form.data.description,
@@ -32,14 +32,11 @@ export const actions: Actions = {
 			},
 		}).catch(e => {
 			console.error(e);
-			return fail(500, {
-				form,
-				message: e.message,
-			});
+			return error(500, { message: 'Failed to create tally' });
 		});
 
 		return {
-			form: savedForm,
+			form,
 		};
 	},
 };

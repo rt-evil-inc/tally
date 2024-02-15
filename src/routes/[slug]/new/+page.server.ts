@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { PageServerLoad, Actions } from './$types';
-import { fail } from '@sveltejs/kit';
+import { fail, error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { formSchema } from './schema';
 
@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		form,
 		participants: await prisma.participant.findMany({ where: { tallyId: tally.id } }),
+		tallyId: params.slug,
 	};
 };
 
@@ -34,7 +35,7 @@ export const actions: Actions = {
 			return fail(404, { form, message: 'Tally not found' });
 		}
 
-		const savedForm = await prisma.expense.create({
+		await prisma.expense.create({
 			data: {
 				tally: { connect: { id: event.params.slug } },
 				title: form.data.title,
@@ -55,10 +56,13 @@ export const actions: Actions = {
 				},
 				addedBy: { connect: { id: parseInt(form.data.addedBy) } },
 			},
+		}).catch(e => {
+			console.error(e);
+			return error(500, { message: 'Failed to create expense' });
 		});
 
 		return {
-			savedForm,
+			form,
 		};
 	},
 };

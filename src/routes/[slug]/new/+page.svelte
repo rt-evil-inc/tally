@@ -15,9 +15,24 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
-	const form = superForm(data.form, { validators: formSchema, taintedMessage: null, dataType: 'json' });
+	const form = superForm(data.form, {
+		validators: formSchema,
+		taintedMessage: null,
+		dataType: 'json',
+		onUpdated: ({ form }) => {
+			if (form.valid) {
+				toast.success('Added successfully');
+				goto(`/${data.tallyId}`);
+			}
+		},
+		onError: ({ result }) => {
+			toast.error(result.error.message);
+		},
+	});
 	const { form: formStore, errors } = form;
 	$formStore.date = new Date;
 	$formStore.amount = '0.00';
@@ -31,6 +46,8 @@
 	} else if ($formStore.title === 'Transfer') {
 		$formStore.title = '';
 	}
+
+	$: console.log({ form: data.form });
 
 	function capitalize(string: string) {
 		return string.charAt(0).toUpperCase() + string.slice(1);
@@ -137,7 +154,7 @@
 								</Popover.Trigger>
 							</Form.Control>
 							<div class="grow">
-								<Input type="time" on:input={e => $formStore.date = new Date(`${$formStore.date.toISOString().slice(0, 11)}${e.target.value}`)} value={$formStore.date.toISOString().slice(11, 16)} />
+								<Input type="time" on:input={e => $formStore.date = new Date(`${$formStore.date.toISOString().slice(0, 11)}${e.target.value}`)} value={$formStore.date?.toISOString().slice(11, 16)} />
 							</div>
 						</div>
 						<Popover.Content class="w-auto p-0" side="top">
