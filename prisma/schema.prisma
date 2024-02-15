@@ -11,51 +11,55 @@ datasource db {
 }
 
 model Tally {
-  id       Int       @id @default(autoincrement())
-  name     String
-  users    User[]
-  currency String
-  expenses Expense[]
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  participants Participant[]
+  currency     String
+  expenses     Expense[]
 
   @@index([id], name: "groupId_index")
 }
 
-model User {
+model Participant {
   id              Int            @id @default(autoincrement())
   name            String
-  tallyId         Int
+  tallyId         String
   tally           Tally          @relation(fields: [tallyId], references: [id])
-  primaryExpenses Expense[]      @relation("PrimaryUserRelation")
+  primaryExpenses Expense[]      @relation("PrimaryParticipantRelation")
   addedExpenses   Expense[]      @relation("AddedByRelation")
-  expenses        ExpenseUsers[]
+  expenses        ExpenseShare[]
 
   @@index([tallyId], name: "tallyId_index")
 }
 
-model ExpenseUsers {
-  id        Int     @id @default(autoincrement())
-  expense   Expense @relation(fields: [expenseId], references: [id])
-  user      User    @relation(fields: [userId], references: [id])
-  expenseId Int
-  userId    Int
+model ExpenseShare {
+  id            Int         @id @default(autoincrement())
+  expense       Expense     @relation(fields: [expenseId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+  expenseId     Int
+  participantId Int
+  amount        Float?
+  parts         Float?
 
   @@index([expenseId], name: "expenseId_index")
 }
 
 model Expense {
-  id             Int            @id @default(autoincrement())
-  tallyId        Int
-  tally          Tally          @relation(fields: [tallyId], references: [id])
-  title          String
-  amount         Float
-  type           String
-  primaryUserId  Int
-  primaryUser    User           @relation("PrimaryUserRelation", fields: [primaryUserId], references: [id])
-  secondaryUsers ExpenseUsers[]
-  currency       String
-  conversionRate Float
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  addedBy        User           @relation("AddedByRelation", fields: [addedById], references: [id])
-  addedById      Int
+  id                   Int            @id @default(autoincrement())
+  tallyId              String
+  tally                Tally          @relation(fields: [tallyId], references: [id])
+  title                String
+  amount               Float
+  type                 String
+  category             String?
+  primaryParticipantId Int
+  primaryParticipant   Participant    @relation("PrimaryParticipantRelation", fields: [primaryParticipantId], references: [id])
+  shares               ExpenseShare[]
+  currency             String
+  conversionRate       Float
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  addedBy              Participant    @relation("AddedByRelation", fields: [addedById], references: [id])
+  addedById            Int
 }

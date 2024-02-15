@@ -21,15 +21,8 @@
 	const { form: formStore, errors } = form;
 	$formStore.date = new Date;
 	$formStore.amount = '0.00';
+	$formStore.addedBy = data.participants[0].id; // TODO: read from store
 	const df = new DateFormatter('en-US', { dateStyle: 'long' });
-
-	const participants = {
-		0: 'Person 1',
-		1: 'Person 2',
-		2: 'Person 3',
-		3: 'Person 4',
-		4: 'Person 5',
-	};
 
 	$: console.log({ values: $formStore, errors: $errors });
 
@@ -89,7 +82,6 @@
 				<Form.Item>
 					<Form.Label>Title</Form.Label>
 					<Form.Input />
-					<Form.Description>The title of your {$formStore.type}.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
@@ -113,13 +105,12 @@
 							</Form.Item>
 						</Form.Field>
 					</div>
-					<Form.Description>The amount of your {$formStore.type}.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
 			<!-- Date -->
 			<Form.Field {config} name="date">
-				<Form.Item class="flex flex-col">
+				<Form.Item>
 					<Form.Label for="date">Date</Form.Label>
 					<Popover.Root>
 						<div class="flex gap-2">
@@ -139,7 +130,6 @@
 							/>
 						</Popover.Content>
 					</Popover.Root>
-					<Form.Description>Date of your {$formStore.type}.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
@@ -150,8 +140,8 @@
 					<Form.Select>
 						<Form.SelectTrigger placeholder="Select a participant" class="{$formStore.primaryParticipant ? '' : 'text-muted-foreground'}" />
 						<Form.SelectContent>
-							{#each Object.entries(participants) as [id, participant]}
-								<Form.SelectItem value={id}>{participant}</Form.SelectItem>
+							{#each data.participants as { id, name }}
+								<Form.SelectItem value={id}>{name}</Form.SelectItem>
 							{/each}
 						</Form.SelectContent>
 					</Form.Select>
@@ -164,14 +154,14 @@
 				<Table.Header>
 					<Table.Row>
 						<Table.Head class="w-8">
-							{@const checked = Object.keys(participants).filter(id => $formStore.distribution[id]?.parts || $formStore.distribution[id]?.amount)}
+							{@const checked = data.participants.filter(({ id }) => $formStore.distribution[id]?.parts || $formStore.distribution[id]?.amount)}
 							<Checkbox
-								checked="{checked.length === Object.keys(participants).length ? true : checked.length === 0 ? false : 'indeterminate'}"
+								checked="{checked.length === data.participants.length ? true : checked.length === 0 ? false : 'indeterminate'}"
 								on:click={() => {
-									if (checked.length === Object.keys(participants).length) {
+									if (checked.length === data.participants.length) {
 										$formStore.distribution = {};
 									} else {
-										Object.keys(participants).forEach(id => { if (!$formStore.distribution[id]?.amount) $formStore.distribution[id] = { parts: 1 }; });
+										data.participants.forEach(({ id }) => { if (!$formStore.distribution[id]?.amount) $formStore.distribution[id] = { parts: 1 }; });
 									}
 								}}
 							/></Table.Head>
@@ -181,7 +171,7 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body class="w-full">
-					{#each Object.entries(participants) as [id, participant]}
+					{#each data.participants as { id, name }}
 						{@const entry = $formStore.distribution[id]}
 						<Table.Row>
 							<Table.Cell>
@@ -197,7 +187,7 @@
 									}}
 								/>
 							</Table.Cell>
-							<Table.Cell class="{entry ? '' : 'text-muted-foreground'}">{participant}</Table.Cell>
+							<Table.Cell class="{entry ? '' : 'text-muted-foreground'}">{name}</Table.Cell>
 							<Table.Cell><Input class="{entry?.parts ? '' : 'text-muted-foreground'} text-right" type="number" step="any" min={0}
 								value={entry?.parts ? entry?.parts : entry?.amount ? '' : 0}
 								on:input={e => {

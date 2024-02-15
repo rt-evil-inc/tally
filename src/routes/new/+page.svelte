@@ -8,9 +8,9 @@
 	import { superForm } from 'sveltekit-superforms/client';
 
 	export let data: PageData;
-	const form = superForm(data.form, { validators: formSchema, taintedMessage: null });
+	const form = superForm(data.form, { validators: formSchema, taintedMessage: null, dataType: 'json' });
 	const { form: formStore, errors } = form;
-	$: console.log($errors);
+	$: console.log({ values: $formStore, errors: $errors });
 </script>
 
 <Card.Root class="w-[400px]">
@@ -63,7 +63,7 @@
 								<Form.Input placeholder="{i === 0 ? 'Your name' : 'Other participant name'}" />
 								<Form.Validation />
 								{#if i > 0}
-									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => $formStore.participants = $formStore.participants.filter((_, index) => index !== i) }>✖</Button>
+									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => $formStore.participants = $formStore.participants.filter((_, index) => index !== i)}>✖</Button>
 								{/if}
 							</div>
 						</Form.Item>
