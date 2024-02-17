@@ -4,17 +4,20 @@ import type { PageServerLoad } from './$types';
 const prisma = new PrismaClient;
 
 export const load: PageServerLoad = async ({ params }) => {
-	const tally = await prisma.tally.findUnique({	where: { id: params.slug as string	} });
+	const tally = await prisma.tally.findUnique({	where: { id: params.tally as string	} });
 
 	if (!tally) {
 		return { status: 404, error: new Error('Tally not found') };
 	}
 
 	return {
-		expenses: await prisma.expense.findMany({
-			where: { tallyId: params.slug as string },
-			include: { primaryParticipant: true },
+		tally: await prisma.tally.findUnique({
+			where: { id: params.tally as string },
+			include: {
+				expenses: {
+					include: { primaryParticipant: true },
+				},
+			},
 		}),
-		tallyId: params.slug as string,
 	};
 };

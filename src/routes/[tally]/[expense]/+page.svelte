@@ -25,8 +25,8 @@
 		dataType: 'json',
 		onUpdated: ({ form }) => {
 			if (form.valid) {
-				toast.success('Added successfully');
-				goto(`/${data.tallyId}`);
+				toast.success(data.expense ? 'Updated successfully' : 'Added successfully');
+				goto(`/${data.tally.id}`);
 			}
 		},
 		onError: ({ result }) => {
@@ -34,9 +34,15 @@
 		},
 	});
 	const { form: formStore, errors } = form;
-	$formStore.date = new Date;
-	$formStore.amount = '0.00';
-	$formStore.addedBy = data.participants[0].id; // TODO: read from store
+
+	if (!data.expense) {
+		$formStore.date = new Date;
+		$formStore.amount = '0.00';
+		$formStore.addedBy = data.tally.participants[0].id; // TODO: read from store
+	}
+
+	$formStore.amount = parseFloat($formStore.amount).toFixed(2);
+
 	const df = new DateFormatter('en-US', { dateStyle: 'long' });
 
 	$: console.log({ values: $formStore, errors: $errors });
@@ -56,8 +62,8 @@
 
 <Card.Root class="w-[400px]">
 	<Card.Header>
-		<Card.Title>New {capitalize($formStore.type)}</Card.Title>
-		<Card.Description>Add a new {$formStore.type}</Card.Description>
+		<Card.Title>{data.expense ? 'Edit' : 'New'} {capitalize($formStore.type)}</Card.Title>
+		<Card.Description>{data.expense ? 'Modify the details of the' : 'Add a new'} {$formStore.type}</Card.Description>
 	</Card.Header>
 	<Card.Content>
 		<Form.Root method="POST" controlled {form} schema={formSchema} let:config>
@@ -82,7 +88,7 @@
 					<Form.Item class="w-1/2">
 						<Form.Label>Category</Form.Label>
 						<Form.Select>
-							<Form.SelectTrigger placeholder="No category" class="{$formStore.category ? '' : 'text-muted-foreground'}" />
+							<Form.SelectTrigger placeholder={$formStore.category ?? 'No category'} class="{$formStore.category ? '' : 'text-muted-foreground'}" />
 							<Form.SelectContent>
 								<Form.SelectItem value={null} class="text-muted-foreground">No category</Form.SelectItem>
 								{#each categories as category}
@@ -126,15 +132,15 @@
 				</Form.Item>
 			</Form.Field>
 			<!-- Conversion rate -->
-			{#if $formStore.currency !== data?.form?.data?.currency}
+			{#if $formStore.currency !== data.tally.currency}
 				<Form.Field {config} name="conversionRate">
 					<Form.Item>
 						<div class="flex gap-8">
-							<span class="whitespace-nowrap text-sm text-muted-foreground">= {($formStore.amount * $formStore.conversionRate).toFixed(2)} {data?.form?.data?.currency}</span>
+							<span class="whitespace-nowrap text-sm text-muted-foreground">= {($formStore.amount * $formStore.conversionRate).toFixed(2)} {data.tally.currency}</span>
 							<div class="flex items-center gap-1 text-sm">
 								<span class="whitespace-nowrap">1 {$formStore.currency} =</span>
 								<Form.Input type="number" step="any" min={0} placeholder="1.00" />
-								{data?.form?.data?.currency}
+								{data.tally.currency}
 							</div>
 						</div>
 						<Form.Validation />
@@ -171,9 +177,9 @@
 				<Form.Item class="mt-4">
 					<Form.Label>{$formStore.type === 'expense' ? 'Paid by' : $formStore.type === 'income' ? 'Received by' : 'From'}</Form.Label>
 					<Form.Select>
-						<Form.SelectTrigger placeholder="Select a participant" class="{$formStore.primaryParticipant ? '' : 'text-muted-foreground'}" />
+						<Form.SelectTrigger placeholder={data.expense?.primaryParticipant.name ?? 'Select a participant'} class="{$formStore.primaryParticipant ? '' : 'text-muted-foreground'}" />
 						<Form.SelectContent>
-							{#each data.participants as { id, name }}
+							{#each data.tally.participants as { id, name }}
 								<Form.SelectItem value={id}>{name}</Form.SelectItem>
 							{/each}
 						</Form.SelectContent>
@@ -189,14 +195,14 @@
 				<Table.Header>
 					<Table.Row>
 						<Table.Head class="w-8">
-							{@const checked = data.participants.filter(({ id }) => $formStore.distribution[id]?.parts || $formStore.distribution[id]?.amount)}
+							{@const checked = data.tally.participants.filter(({ id }) => $formStore.distribution[id]?.parts || $formStore.distribution[id]?.amount)}
 							<Checkbox
-								checked="{checked.length === data.participants.length ? true : checked.length === 0 ? false : 'indeterminate'}"
+								checked="{checked.length === data.tally.participants.length ? true : checked.length === 0 ? false : 'indeterminate'}"
 								on:click={() => {
-									if (checked.length === data.participants.length) {
+									if (checked.length === data.tally.participants.length) {
 										$formStore.distribution = {};
 									} else {
-										data.participants.forEach(({ id }) => { if (!$formStore.distribution[id]?.amount) $formStore.distribution[id] = { parts: 1 }; });
+										data.tally.participants.forEach(({ id }) => { if (!$formStore.distribution[id]?.amount) $formStore.distribution[id] = { parts: 1 }; });
 									}
 								}}
 							/></Table.Head>
@@ -206,7 +212,7 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body class="w-full">
-					{#each data.participants as { id, name }}
+					{#each data.tally.participants as { id, name }}
 						{@const entry = $formStore.distribution[id]}
 						<Table.Row>
 							<Table.Cell>
@@ -247,7 +253,7 @@
 			{#if $errors?._errors?.[0]}
 				<span class="text-[0.8rem] font-medium text-destructive">{$errors._errors[0]}</span><br>
 			{/if}
-			<Form.Button class="mt-5">Add</Form.Button>
+			<Form.Button class="mt-5">{data.expense ? 'Save' : 'Add'}</Form.Button>
 		</Form.Root>
 	</Card.Content>
 </Card.Root>
