@@ -11,7 +11,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	return {
-		expenses: await prisma.expense.findMany({ where: { tallyId: params.slug as string } }),
+		expenses: await prisma.expense.findMany({
+			where: { tallyId: params.slug as string },
+			include: { primaryParticipant: true },
+		}),
 		tallyId: params.slug as string,
 	};
 };

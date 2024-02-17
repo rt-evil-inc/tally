@@ -11,12 +11,15 @@
 		<Card.Description>Choose one of the tallies</Card.Description>
 		<Button href="/new" variant="outline" class="absolute !mt-0 top-6 right-6">New</Button>
 	</Card.Header>
-	<Card.Content>
-		{#each data.tallies as tally}
-			<Button href={`/${tally.id}`} variant="outline" class="w-full mb-2 flex-col items-start h-fit">
-				{tally.name}
-				<span class="text-muted-foreground font-normal">{tally.description}</span>
-			</Button>
+	<Card.Content class="max-h-[500px] overflow-auto">
+		{#if data.tallies.length === 0}
+			<p class="text-sm text-center p-2">You don't have any tallies yet</p>
+		{/if}
+		{#each data.tallies as tally, i}
+			<a href="/{tally.id}" class="flex flex-col text-sm hover:bg-muted/50 p-2 rounded {i > 0 && 'border-t'}">
+				<span>{tally.name}</span>
+				<span class="text-muted-foreground">{tally.description}</span>
+			</a>
 		{/each}
 	</Card.Content>
 </Card.Root>
