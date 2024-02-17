@@ -39,7 +39,6 @@
 				<Form.Item>
 					<Form.Label>Name</Form.Label>
 					<Form.Input />
-					<Form.Description>The name of your Tally.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
@@ -47,7 +46,6 @@
 				<Form.Item class="mt-4">
 					<Form.Label>Description</Form.Label>
 					<Form.Textarea />
-					<Form.Description>The description of your Tally.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
@@ -63,7 +61,6 @@
 							{/each}
 						</Form.SelectContent>
 					</Form.Select>
-					<Form.Description>Default currency for your Tally.</Form.Description>
 					<Form.Validation />
 				</Form.Item>
 			</Form.Field>
@@ -78,7 +75,7 @@
 								<Form.Input placeholder="{i === 0 ? 'Your name' : 'Other participant name'}" />
 								<Form.Validation />
 								{#if i > 0}
-									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground" variant="outline" on:click={() => $formStore.participants = $formStore.participants.filter((_, index) => index !== i)}>✖</Button>
+									<Button class="absolute right-1 top-1 h-7 w-7 p-0 border-0 font-[\'Segoe_UI_Symbol\'] text-muted-foreground bg-card" variant="outline" on:click={() => $formStore.participants = $formStore.participants.filter((_, index) => index !== i)}>✖</Button>
 								{/if}
 							</div>
 						</Form.Item>

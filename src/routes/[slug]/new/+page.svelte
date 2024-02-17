@@ -148,7 +148,7 @@
 					<Popover.Root>
 						<div class="flex gap-2">
 							<Form.Control id="date" let:attrs>
-								<Popover.Trigger id="date" {...attrs} class={cn(buttonVariants({ variant: 'outline' }), 'grow justify-start text-left font-normal', !$formStore.date && 'text-muted-foreground')} >
+								<Popover.Trigger id="date" {...attrs} class={cn(buttonVariants({ variant: 'outline' }), 'grow justify-start text-left font-normal bg-card', !$formStore.date && 'text-muted-foreground')} >
 									{df.format($formStore.date)}
 									<CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
 								</Popover.Trigger>
